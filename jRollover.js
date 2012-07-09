@@ -13,7 +13,7 @@
   	}
     this.option.$next = this.base.find(this.option.$next) || this.base.find('.next')
     this.option.$prev = this.base.find(this.option.$prev) || this.base.find('.prev')
-    this.option.$frame this.option.$frame || this.base.find('.frame')
+    this.option.$frame = this.option.$frame || this.base.find('.frame')
     
     this.visible_area = this.option.$frame /* visible area */
     this.visible_area.css('position', 'relative')
@@ -26,7 +26,7 @@
 
     var self = this
     var _click = function(dir) { return function(e) { 
-        e.preventDefault() 
+    	e.preventDefault() 
         $(this).blur()
         if (self.sliding) { return }
         self.sliding = true
@@ -135,6 +135,7 @@
         this.base.fadeIn('fast')
       }
       this.base.trigger("jRollover.ready", [this.nowVisible(), this.items])
+      this.base.trigger("jRollover.reachedLeft", this.option.$prev )
     }
 
   Rollover.prototype.nowVisible = function() {
@@ -149,9 +150,10 @@
   } 
 
   Rollover.prototype.prev = function() {
-    if (this.items.length <= this.visible_items) { return }
-    if (this.options.isGallery && this.first() <= 0) {
-      self.base.trigger("jRollover.reachedLeft") 
+	if (this.items.length <= this.visible_items) { return }
+    if (this.option.isGallery && this.first() <= 0) {
+      this.base.trigger("jRollover.reachedLeft", this.option.$prev ) 
+      this.sliding = false;
       return
     }
     var prev = ((this.first()+this.items.length)-1)%this.items.length
@@ -164,10 +166,14 @@
   }
 
   Rollover.prototype.next = function() {
-    if (this.items.length <= this.visible_items) { return }
-    if (this.options.isGallery && this.first() + this.visible_items >= this.items.length) {
-      self.base.trigger("jRollover.reachedRight", ) 
-      return
+	if (this.items.length <= this.visible_items) { return }
+    if (this.option.isGallery && this.first() + this.visible_items >= this.items.length) {
+    	this.sliding = false;
+    	return
+    }
+    if (this.option.isGallery && this.first() + this.visible_items +1 >= this.items.length) {
+      this.base.trigger("jRollover.reachedRight", this.option.$next ) 
+      
     }
     
     var next = (this.first()+this.visible_items)%this.items.length
@@ -204,7 +210,7 @@
   $.fn.jGallery = function(option) {
     option.isGallery = true
     $(this).each(function() {
-//console.log("create carousel on:", $(this));
+//console.log("create carousel on: ", $(this));
       new Rollover($(this), option)
     })
     return this;
